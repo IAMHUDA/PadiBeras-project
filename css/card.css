@@ -1,0 +1,44 @@
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+.card {
+    width: 250px;
+    height: 430px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card img {
+    width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.card-text {
+ 
+}
+
+.card-text h3 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center; /* Memastikan teks nama terpusat */
+}
+
+.card-text p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+}

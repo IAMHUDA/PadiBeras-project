@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register</title>
+  <link rel="stylesheet" type="text/css" href="./css/style.css">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+  <div id="container">
+    <div id="register-container">
+      <h2>Register</h2>
+      <input type="text" id="register-email" placeholder="Email">
+      <input type="password" id="register-password" placeholder="Password">
+      <div class="row">
+          <button onclick="register()">Register</button>
+          <button onclick="goToLogin()">Back to Login</button>
+      </div>
+    </div>
+  </div>
+  <script src="./js/login.js"></script>
+</body>
+</html>

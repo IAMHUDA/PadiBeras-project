@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulir Pemasok Padi dan Beras</title>
+    <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+</head>
+<body>
+
+    <style>
+       body {
+    font-family: Arial, sans-serif;
+    background-color: #333; /* Darker background color */
+    color: #f0f0f0; /* Light text color for contrast */
+    margin: 0;
+    padding: 20px;
+}
+
+.containerr, .table-container, .search-container {
+    max-width: 600px;
+    margin: auto;
+    margin-top: 90px;
+    background: #444; /* Slightly lighter dark background */
+    padding: 20px;
+    padding-top: 40px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    margin-bottom: 20px;
+    border-radius: 5px; /* Add border radius for smoother edges */
+}
+
+.table-container {
+    max-width: 1000px;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #f0f0f0; /* Light text color */
+}
+
+label {
+    display: block;
+    margin: 10px 0 5px;
+    color: #f0f0f0; /* Light text color */
+}
+
+input[type="text"], input[type="email"], input[type="tel"], input[type="file"], select, input[type="number"], input[type="date"] {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0 20px;
+    border: 1px solid #666; /* Darker border color */
+    border-radius: 5px;
+    background-color: #555; /* Darker input background */
+    color: #f0f0f0; /* Light text color for input */
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+.search-box {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #666; /* Darker border color */
+    border-radius: 5px;
+    background-color: #555; /* Darker input background */
+    color: #f0f0f0; /* Light text color for input */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #444; /* Darker table background */
+    color: #f0f0f0; /* Light text color for table */
+}
+
+table, th, td {
+    border: 1px solid #666; /* Darker border color */
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+th {
+    background-color: #555; /* Darker header background */
+}
+
+img {
+    max-width: 50px;
+    max-height: 50px;
+}
+
+.delete-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+}
+    </style>
+
+<nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container px-4 px-lg-5">
+      <a href="/home.html">
+          <button>
+          kembali ke home
+          <i class="fas fa-bars"></i>
+        </button>
+      </a>
+    </div>
+  </nav>
+
+<div class="containerr">
+    <h2>Formulir Pemasok Padi dan Beras</h2>
+    <label for="name">Nama:</label>
+    <input type="text" id="name" required>
+    
+    <label for="email">Email:</label>
+    <input type="email" id="email" required>
+    
+    <label for="phone">No Telpon:</label>
+    <input type="tel" id="phone" required>
+    
+    <label for="address">Alamat:</label>
+    <input type="text" id="address" required>
+    
+    <label for="product-type">Jenis Produk:</label>
+    <select id="product-type" required>
+        <option value="" disabled selected>Pilih Jenis Produk</option>
+        <option value="padi">Padi</option>
+        <option value="beras">Beras</option>
+    </select>
+    
+    <label for="quantity">Jumlah (kg):</label>
+    <input type="number" id="quantity" required>
+    
+    <label for="delivery-date">Tanggal Pengiriman:</label>
+    <input type="date" id="delivery-date" required>
+    
+    <button type="button" onclick="submitSupplierForm()">Kirim</button>
+</div>
+
+<div class="search-container">
+    <input type="text" class="search-box" id="search" placeholder="Search for names..">
+</div>
+
+<div class="table-container">
+    <table id="supplierTable">
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Email</th>
+                <th>No Telpon</th>
+                <th>Alamat</th>
+                <th>Jenis Produk</th>
+                <th>Jumlah (kg)</th>
+                <th>Tanggal Pengiriman</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="supplierData">
+            <!-- Data akan dimasukkan di sini -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyBUnsLDJ3XosVCbulcAkalKc0yRacmGMoM",
+  authDomain: "padiberas-e9171.firebaseapp.com",
+  projectId: "padiberas-e9171",
+  storageBucket: "padiberas-e9171.appspot.com",
+  messagingSenderId: "874400049002",
+  appId: "1:874400049002:web:fd5750b3337491d3e8e713",
+  measurementId: "G-29MGV0HMVK"
+};
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
+    const database = firebase.database();
+
+    function submitSupplierForm() {
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const phone = document.getElementById('phone').value;
+        const address = document.getElementById('address').value;
+        const productType = document.getElementById('product-type').value;
+        const quantity = document.getElementById('quantity').value;
+        const deliveryDate = document.getElementById('delivery-date').value;
+
+        if (!name || !email || !phone || !address || !productType || !quantity || !deliveryDate) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Silakan isi semua kolom!',
+            });
+            return;
+        }
+
+        const newSupplierRef = database.ref('suppliers').push();
+        newSupplierRef.set({
+            name,
+            email,
+            phone,
+            address,
+            productType,
+            quantity,
+            deliveryDate
+        }, function(error) {
+            if (error) {
+                console.error('Gagal menyimpan data ke Firebase Database', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Gagal menyimpan data!',
+                });
+            } else {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sukses!',
+                    text: 'Data pemasok berhasil disimpan!',
+                }).then(function() {
+                    // Clear the form after submission
+                    document.getElementById('name').value = '';
+                    document.getElementById('email').value = '';
+                    document.getElementById('phone').value = '';
+                    document.getElementById('address').value = '';
+                    document.getElementById('product-type').value = '';
+                    document.getElementById('quantity').value = '';
+                    document.getElementById('delivery-date').value = '';
+                });
+            }
+        });
+    }
+
+    database.ref('suppliers').on('child_added', function(snapshot) {
+        const data = snapshot.val();
+        appendSupplierRow(data, snapshot.key);
+    });
+
+    document.getElementById('search').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+            searchSupplierTable();
+        } else if (event.target.value === '') {
+            loadSupplierTableData();
+        }
+    });
+
+    function appendSupplierRow(data, key) {
+        const table = document.getElementById('supplierData');
+        const row = table.insertRow();
+        row.insertCell(0).innerText = data.name;
+        row.insertCell(1).innerText = data.email;
+        row.insertCell(2).innerText = data.phone;
+        row.insertCell(3).innerText = data.address;
+        row.insertCell(4).innerText = data.productType;
+        row.insertCell(5).innerText = data.quantity;
+        row.insertCell(6).innerText = data.deliveryDate;
+        
+        // Add delete button
+        const deleteCell = row.insertCell(7);
+        const deleteButton = document.createElement('button');
+        deleteButton.innerText = 'Hapus';
+        deleteButton.className = 'delete-button';
+        deleteButton.onclick = function() {
+            deleteSupplier(key);
+        };
+        deleteCell.appendChild(deleteButton);
+    }
+
+    function deleteSupplier(key) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Anda yakin?',
+            text: 'Data pemasok akan dihapus permanen!',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#aaa',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                database.ref('suppliers/' + key).remove()
+                    .then(function() {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sukses!',
+                            text: 'Data pemasok berhasil dihapus!',
+                        });
+                    })
+                    .catch(function(error) {
+                        console.error('Gagal menghapus data dari Firebase Database', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Gagal menghapus data!',
+                        });
+                    });
+            }
+        });
+    }
+
+    function searchSupplierTable() {
+        const input = document.getElementById('search').value.toUpperCase();
+        const table = document.getElementById('supplierTable');
+        const tr = table.getElementsByTagName('tr');
+        
+        Array.from(tr).forEach(row => {
+            const td = row.getElementsByTagName('td')[0];
+            if (td) {
+                if (td.innerText.toUpperCase().indexOf(input) > -1) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    function loadSupplierTableData() {
+        document.getElementById('supplierData').innerHTML = '';
+        database.ref('suppliers').once('value', function(snapshot) {
+            snapshot.forEach(function(childSnapshot) {
+                const data = childSnapshot.val();
+                appendSupplierRow(data, childSnapshot.key);
+            });
+        });
+    }
+</script>
+
+</body>
+</html>
